@@ -53,6 +53,7 @@ TIMES_OP = 3
 DIVIDE_OP = 4
 
 tokens = (
+    "FUNCTION",
     "NUMBER",
     "VARIABLE",
     "SETTO",
@@ -66,6 +67,10 @@ tokens = (
     "COMMA",
     "STRING",
     "CONNECT",
+    "LBRACE",
+    "RBRACE",
+    "SEMI",
+    "DOT"
 )
 
 t_PLUS = r'\+'
@@ -78,6 +83,11 @@ t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_COMMA = r','
 t_CONNECT = r'\->'
+t_FUNCTION = r'fun'
+t_LBRACE = r'\{'
+t_RBRACE = r'\}'
+t_SEMI = r';'
+t_DOT = r'.'
 
 def t_NUMBER(t):
     r'\d+\.?\d*'
@@ -116,6 +126,13 @@ def t_error(t):
 
 
 lexer = lex.lex()
+
+def p_top_level(p):
+    '''
+    top_level : assignment
+              | function_definition
+    '''
+    p[0] = p[1]
 
 def p_assignment_assign(p):
     '''
@@ -176,7 +193,7 @@ def p_flow_function(p):
 
 def p_flow_function_call(p):
     '''
-    flow_function_call : VARIABLE LPAREN params RPAREN
+    flow_function_call : VARIABLE DOT LPAREN params RPAREN
     '''
     node = add_node( {"type":"FLOW_FUNCTION_CALL", "label":f"FF_{p[1]}", "value":p[1]} )
     pending_node = add_node( {"type":"PENDING_NODE", "label":"PENDING", "value":""} )
@@ -296,7 +313,7 @@ def p_factor_function_call(p):
 
 def p_function_call_no_params(p):
     '''
-    function_call : VARIABLE LPAREN RPAREN
+    function_call : VARIABLE DOT LPAREN RPAREN
     '''
     # node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
     p[0] = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
@@ -312,10 +329,10 @@ def p_function_call_params(p):
     # for n in p[3]:
     #     parseGraph.add_edge(node["counter"], n["counter"])def p_function_call_params(p):
     '''
-    function_call : VARIABLE LPAREN params RPAREN
+    function_call : VARIABLE DOT LPAREN params RPAREN
     '''
     node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
-    for n in p[3]:
+    for n in p[4]:
         if isinstance(n, dict) and "counter" in n:
             parseGraph.add_edge(node["counter"], n["counter"])
     p[0] = node
@@ -331,6 +348,46 @@ def p_params(p):
         p[0] = p[1] + [p[3]]
     else:
         p[0] = [p[1]]
+
+def p_function_definition(p):
+    '''
+    function_definition : VARIABLE LPAREN args RPAREN LBRACE statements RBRACE
+    '''
+    value = {
+        'name': p[1],
+        'args': p[3],
+        'body': p[6],
+    }
+
+    node = add_node( {'type': 'FUNCTION_DEFINITION', 'label': f'FUNCD_{value["name"]}', 'value': value })
+    p[0] = node
+
+def p_statements(p):
+    '''
+    statements : statement
+               | statements SEMI statement
+    '''
+    if len(p) > 2:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = [p[1]]
+
+def p_statement(p):
+    '''
+    statement : expression
+    '''
+    p[0] = p[1]
+
+def p_empty(p):
+    'empty :'
+    pass
+
+def p_args(p):
+    '''
+    args : VARIABLE COMMA args
+         | VARIABLE
+         | empty
+    '''
 
 def p_error(p):
     print("Syntax error found", p)
@@ -393,7 +450,10 @@ def visit_node(tree, node_id, from_id):
     if( current_node["type"] == "DIVIDE" ):
         return res[0] / res[1]
     
-    
+    if (current_node["type"] == "FUNCTION_DEFINITION"):
+        symbol_table[current_node["value"]["name"]] = current_node["value"]
+        return f'func<{current_node['value']['name']}>'
+
     if( current_node["type"] == "FUNCTION_CALL" or current_node["type"] == "FLOW_FUNCTION_CALL"):
         v = current_node["value"]
         if v in symbol_table:
