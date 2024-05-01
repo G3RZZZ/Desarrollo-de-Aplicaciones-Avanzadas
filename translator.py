@@ -4,6 +4,7 @@
 #Jacobo Soffer Levy
 
 #Importing required libraries
+import sys
 import ply.lex as lex
 import ply.yacc as yacc
 import networkx as nx
@@ -13,7 +14,7 @@ from library import *
 
 #Initializing global variables
 parseGraph = None #Graph to store the parse tree
-draw = True #Flag to draw the parse tree
+draw = False #Flag to draw the parse tree
 NODE_COUNTER = 0 #Counter to assign a unique id to each node
 
 symbol_table = dict()
@@ -427,38 +428,94 @@ def visit_node(tree, node_id, from_id):
         
 
 parser = yacc.yacc()
-while True:
+parseGraph = nx.Graph()
+NODE_COUNTER = 0
+
+def repl():
+    global parseGraph
+    global NODE_COUNTER
+    while True:
+
+        try:
+            data = input(">")
+            if data == "exit":
+                break
+            if (data == "symbols"):
+                print(symbol_table)
+                continue
+
+        except EOFError:
+            break
+
+        if not data: continue
+
+        parseGraph = nx.Graph()
+        NODE_COUNTER = 0
+        root = add_node( {"type":"ROOT", "label":"ROOT"} )
+        result = parser.parse(data)
+        parseGraph.add_edge(root["counter"], result["counter"])
+
+        labels = nx.get_node_attributes(parseGraph, "label")
+
+        if(draw):
+            # pos = graphviz_layout(parseGraph, prog="dot")
+            # nx.draw(parseGraph, pos)
+            # nx.draw(parseGraph, with_labels=True, font_weight="bold")
+            # nx.draw(parseGraph, pos, labels=labels, with_labels=True)
+            nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
+            plt.show()
+
+        execute_parse_tree(parseGraph)
+        # print(result)
+
+    # print("Finished, accepted")
+
+def parse_file(path):
+    global parseGraph
+    global NODE_COUNTER
 
     try:
-        data = input(">")
-        if data == "exit":
+        file = open(path, 'r')
+    except:
+        print("ERROR: could not open file '{path}")
+    lines = file.readlines()
+    for data in lines:
+
+        try:
+            if data == "exit":
+                break
+            if (data == "symbols"):
+                print(symbol_table)
+                continue
+
+        except EOFError:
             break
-        if (data == "symbols"):
-            print(symbol_table)
-            continue
 
-    except EOFError:
-        break
+        if not data: continue
 
-    if not data: continue
+        parseGraph = nx.Graph()
+        NODE_COUNTER = 0
+        root = add_node( {"type":"ROOT", "label":"ROOT"} )
+        result = parser.parse(data)
+        parseGraph.add_edge(root["counter"], result["counter"])
 
-    parseGraph = nx.Graph()
-    NODE_COUNTER = 0
-    root = add_node( {"type":"ROOT", "label":"ROOT"} )
-    result = parser.parse(data)
-    parseGraph.add_edge(root["counter"], result["counter"])
+        labels = nx.get_node_attributes(parseGraph, "label")
 
-    labels = nx.get_node_attributes(parseGraph, "label")
+        if(draw):
+            # pos = graphviz_layout(parseGraph, prog="dot")
+            # nx.draw(parseGraph, pos)
+            # nx.draw(parseGraph, with_labels=True, font_weight="bold")
+            # nx.draw(parseGraph, pos, labels=labels, with_labels=True)
+            nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
+            plt.show()
 
-    if(draw):
-        # pos = graphviz_layout(parseGraph, prog="dot")
-        # nx.draw(parseGraph, pos)
-        # nx.draw(parseGraph, with_labels=True, font_weight="bold")
-        # nx.draw(parseGraph, pos, labels=labels, with_labels=True)
-        nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
-        plt.show()
+        execute_parse_tree(parseGraph)
+        # print(result)
 
-    execute_parse_tree(parseGraph)
-    # print(result)
+    # print("Finished, accepted")
 
-# print("Finished, accepted")
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        parse_file(sys.argv[1])
+    else:
+        repl()
