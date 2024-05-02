@@ -1,0 +1,11 @@
+add(a, b) {
+    a + b
+}
+
+addTwo(a, fn) {
+    fn.(a, 2)
+}
+
+res = addTwo.(8, add)
+
+println.(10)
