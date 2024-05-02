@@ -148,7 +148,9 @@ Demostraciones de la implementación de procesamientos de imágenes de OpenCV ju
 
 ## Conclusiones Individuales
 Enlaces a los videos individuales:
-- Gerardo Gutierrez Paniagua - 
+
+Video: [![Gerardo Gutierrez Paniagua]()](https://www.youtube.com/watch?v=1mLkspkZ5UevL_AIoTtATdBphluvQkwk6)
+
 - Mateo Herrera Lavalle - 
 - Jacobo Soffer Levy - 
 
