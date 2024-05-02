@@ -361,46 +361,37 @@ def p_factor_function_call(p):
     '''
     p[0] = p[1]
 
-def p_function_call_no_params(p):
+def p_function_call(p):
     '''
-    function_call : VARIABLE DOT LPAREN RPAREN
+    function_call : VARIABLE DOT LPAREN params RPAREN
     '''
-    # node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
-    node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
+    node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value": {'name': p[1], 'params': p[4]}} )
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
     p[0] = node
     # p[0] = node
     # p[0] = symbol_table[p[1]]()
 
-def p_function_call_params(p):
-    # '''
-    # function_call : VARIABLE LPAREN params RPAREN
-    # '''
-    # node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
-    # for n in p[3]:
-    #     parseGraph.add_edge(node["counter"], n["counter"])def p_function_call_params(p):
-    '''
-    function_call : VARIABLE DOT LPAREN params RPAREN
-    '''
-    node = add_node( {"type":"FUNCTION_CALL", "label":f"FUN_{p[1]}", "value":p[1]} )
-    for n in p[4]:
-        if isinstance(n, dict) and "counter" in n:
-            parseGraph.add_edge(node["counter"], n["counter"])
-
-    parseGraph.add_edge(parseRoot["counter"], node["counter"])
-    p[0] = node
-    # p[0] = node
-    # p[0] = symbol_table[p[1]]( *p[3] )
-
 def p_params(p):
     '''
     params : params COMMA expression
             | expression
+            | empty
     '''
-    if len(p) > 2:
-        p[0] = p[1] + [p[3]]
+    def process_node(n):
+        if type(n) is dict:
+            if n['type'] == 'VARIABLE':
+                return f'__LX_VAR_{n['value']}'
+            else:
+                return n['value']
+        else:
+            return n
+
+    if len(p) == 2 and p[1] == None:
+        p[0] = []
+    elif len(p) > 2:
+        p[0] = [process_node(n) for n in p[1]] + [process_node(p[3])]
     else:
-        p[0] = [p[1]]
+        p[0] = [process_node(p[1])]
 
 def p_function_definition(p):
     '''
@@ -538,18 +529,33 @@ def visit_node(tree, node_id, from_id, symbols, reverse):
 
     if( current_node["type"] == "FUNCTION_CALL" or current_node["type"] == "FLOW_FUNCTION_CALL"):
         v = current_node["value"]
-        if v in symbols:
-            fn = symbols[v]
-            
+        # preprocess args
+        args = [*v['params']]
+        for i, arg in enumerate(args):
+            if type(arg) is str and arg.startswith('__LX_VAR_'):
+                var = arg.split('__LX_VAR_')[1]
+                if var in symbols:
+                    args[i] = symbols[var]
+                else:
+                    print(f'ERROR: {var} not in symbols table')
+                    return f'ERROR: {var} not in symbols table'
+
+        if v['name'] in symbols:
+            fn = symbols[v['name']]
             if type(fn) is dict:
+                if len(args) != len(fn['args']):
+                    print(f'Error: function {v['name']} expected {len(fn['args'])} arguments, received {len(args)}')
+                    return f'Error: function {v['name']} expected {len(fn['args'])} arguments, received {len(args)}'
+                
                 s = copy.deepcopy(symbol_table)
-                print(v)
+                for i, a in enumerate(fn['args']):
+                    s[a] = args[i]
                 res = execute_parse_tree(fn["graph"], s, True)
                 return res
 
             elif( callable(fn) ):
                 try:
-                    res = fn(*res)
+                    res = fn(*args)
                     return res
                 except Exception as e:
                     print(f"Error calling function {v}" , e)
@@ -558,11 +564,11 @@ def visit_node(tree, node_id, from_id, symbols, reverse):
                 print(f"Error function {v} IS NOT a function")
                 return "Error"
         else:
-            fn = search_cv2(v)
+            fn = search_cv2(v['name'])
             if(fn is not None):
                 if( callable(fn) ):
                     try:
-                        res = fn(*res)
+                        res = fn(*args)
                         return res
                     except Exception as e:
                         print(f"Error calling function {v}" , e, v, "FN: ", fn, "RES: ", res)
