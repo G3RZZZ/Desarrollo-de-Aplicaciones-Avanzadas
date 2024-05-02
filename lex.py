@@ -81,6 +81,11 @@ tokens = (
     "newline",
 )
 
+precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+)
+
 t_PLUS = r'\+'
 t_MINUS = r'\-'
 t_SETTO = r'='
