@@ -50,6 +50,7 @@ symbol_table["save_image"] = save_image
 symbol_table["gen_matrix"] = gen_matrix
 symbol_table["gen_vector"] = gen_vector
 symbol_table["show_image"] = show_image
+symbol_table["println"] = print
 # symbol_table["multiplot_show"] = multiplot_show
 
 PLUS_OP = 1
@@ -173,6 +174,8 @@ def p_assignment_flow(p):
     parseGraph.add_edge(node["counter"], node_variable["counter"])
     parseGraph.add_edge(node["counter"], p[3]["counter"])
 
+    remove_duplicates(p[3]["counter"])
+
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
 
     p[0] = node
@@ -258,6 +261,9 @@ def p_expression_minus(p):
     parseGraph.add_edge(node["counter"], p[1]["counter"])
     parseGraph.add_edge(node["counter"], p[3]["counter"])
 
+    remove_duplicates(p[1]["counter"])
+    remove_duplicates(p[3]["counter"])
+
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
 
     p[0] = node
@@ -283,6 +289,9 @@ def p_term_times(p):
     parseGraph.add_edge(node["counter"], p[1]["counter"])
     parseGraph.add_edge(node["counter"], p[3]["counter"])
 
+    remove_duplicates(p[1]["counter"])
+    remove_duplicates(p[3]["counter"])
+
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
 
     p[0] = node
@@ -295,6 +304,9 @@ def p_term_divide(p):
     node = add_node( {"type":"DIVIDE", "label":"/", "value":""} )
     parseGraph.add_edge(node["counter"], p[1]["counter"])
     parseGraph.add_edge(node["counter"], p[3]["counter"])
+
+    remove_duplicates(p[1]["counter"])
+    remove_duplicates(p[3]["counter"])
 
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
 
@@ -314,6 +326,9 @@ def p_exponent_ext(p):
     node = add_node( {"type":"POWER", "label":"POW", "value":""} )
     parseGraph.add_edge(node["counter"], p[1]["counter"])
     parseGraph.add_edge(node["counter"], p[3]["counter"])
+
+    remove_duplicates(p[1]["counter"])
+    remove_duplicates(p[3]["counter"])
 
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
 
@@ -378,6 +393,8 @@ def p_params(p):
             | empty
     '''
     def process_node(n):
+        if n['label'] in ['*', '+', '-', '/', '^']:
+            return f'__LX_EVAL_{n['counter']}'
         if type(n) is dict:
             if n['type'] == 'VARIABLE':
                 return f'__LX_VAR_{n['value']}'
@@ -465,20 +482,20 @@ def p_args(p):
 def p_error(p):
     print("Syntax error found", p)
 
-def execute_parse_tree(tree, symbols, reverse=False):
+def execute_parse_tree(tree, symbols):
     # root = tree.nodes[0]
     root_id = 0
-    res = (visit_node(tree, root_id, -1, symbols, reverse))
+    res = (visit_node(tree, root_id, -1, symbols))
     if(type(res) == int or type(res) == float):
         print("TREE_RESULT: ", res)
     return res
 
-def visit_node(tree, node_id, from_id, symbols, reverse):
+def visit_node(tree, node_id, from_id, symbols):
     children = tree.neighbors(node_id)
     res = []
     for c in children:
         if( c != from_id):
-            res.append(visit_node(tree, c, node_id, symbols, reverse))
+            res.append(visit_node(tree, c, node_id, symbols))
     
     current_node = tree.nodes[node_id]
     # print(f"From Node {node_id}", res)
@@ -539,6 +556,21 @@ def visit_node(tree, node_id, from_id, symbols, reverse):
                 else:
                     print(f'ERROR: {var} not in symbols table')
                     return f'ERROR: {var} not in symbols table'
+            elif type(arg) is str and arg.startswith('__LX_EVAL_'):
+                nid = int(arg.split('__LX_EVAL_')[1])
+                local_graph = nx.Graph()
+                root = {"type": "ROOT", "label": "ROOT", "counter": 0}
+                local_graph.add_node(0, **root)
+                node = tree.nodes[nid]
+                local_graph.add_node(node['counter'], **node)
+                local_graph.add_edge(root["counter"], node['counter'])
+                children = tree.neighbors(nid)
+                for c in children:
+                    n = tree.nodes[c]
+                    local_graph.add_node(n['counter'], **n)
+                    local_graph.add_edge(node['counter'], n['counter'])
+                r = execute_parse_tree(local_graph, symbols)
+                args[i] = r
 
         if v['name'] in symbols:
             fn = symbols[v['name']]
