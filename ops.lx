@@ -1,1 +1,3 @@
 println.(2*3)
+println.(8/2)
+println.(14-1)

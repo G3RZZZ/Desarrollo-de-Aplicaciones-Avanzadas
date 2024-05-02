@@ -17,6 +17,7 @@ from library import *
 parseGraph = nx.Graph()
 draw = False #Flag to draw the parse tree
 symbols = False # Flag to dump the symbol table
+treeResult = False # Flag to print tree exec result
 NODE_COUNTER = 0 #Counter to assign a unique id to each node
 
 symbol_table = dict()
@@ -486,7 +487,7 @@ def execute_parse_tree(tree, symbols):
     # root = tree.nodes[0]
     root_id = 0
     res = (visit_node(tree, root_id, -1, symbols))
-    if(type(res) == int or type(res) == float):
+    if(type(res) == int or type(res) == float) and treeResult:
         print("TREE_RESULT: ", res)
     return res
 
@@ -685,11 +686,14 @@ if __name__ == '__main__':
             print('Flags:')
             print('  * To visualize the AST set the `draw` flag when running the command.')
             print('  * To dump the symbol table set the `symblos` flag.')
+            print('  * To print the result of AST execution set the `treeResult` flag.')
             exit(0)
         if 'draw' in sys.argv:
             draw = True
         if 'symbols' in sys.argv:
             symbols = True
+        if 'treeResult' in sys.argv:
+            treeResult = True
         parse_file(sys.argv[1])
     else:
         print("Error: an input file must be provided. Run `python3 lex.py help` for more information")
