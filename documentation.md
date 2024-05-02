@@ -98,12 +98,44 @@ Como herramientas adicionales o accesorios de la gramática, se utilizaron varia
 ## Demostración
 Demostraciones de la implementación de procesamientos de imágenes de OpenCV junto con flujos de transformaciones en esas imágenes. Al igual que la adición de funcionalidades como la aceptación de archivos y la ejecución de su contenido junto con la implementación de funciones. 
 
-### Operaciones numéricas básicas 
+### Funcionalidades básicas 
 
+#### Operaciones numéricas básicas
+
+    >5 + 5 - 3 * 2 / 1
+    TREE_RESULT:  4.0
+
+![basic_operations](/basicOps.png)
+
+    
+#### Asignación de variables
+
+    >a = 5
+    TREE_RESULT:  5.0
+    >a
+    TREE_RESULT:  5.0
+![variable_assignment](/varAssign.png)
+
+    >a + 5
+    TREE_RESULT:  10.0
 
 
 ### Manejo de imágenes con OpenCV
 
+#### Cargar y mostrar una imagen
+
+    >img = load_image("test.jpg")
+    >show_image(img)
+
+![test.jpg](/test.jpg)
+
+#### Buscar y ejecutar una función de OpenCV
+
+    >img2 = blur(img, gen_vector(5, 5))
+    >show_image(img2)
+    >save_image("blurred.jpg", img2)
+
+![blurred.jpg](/blurred.jpg)
 
 
 ### Aceptación de archivos y ejecución de su contenido
@@ -119,3 +151,7 @@ Enlaces a los videos individuales:
 - Gerardo Gutierrez Paniagua - 
 - Mateo Herrera Lavalle - 
 - Jacobo Soffer Levy - 
+
+## Referencias
+
+La implementación de la gramática fue implementada parcialmente con base en sugerencias hechas por la herramienta de Inteligencia Artificial Copilot de GitHub.
