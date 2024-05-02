@@ -394,10 +394,11 @@ def p_params(p):
             | empty
     '''
     def process_node(n):
-        if n['label'] in ['*', '+', '-', '/', '^']:
+        if type(n) is dict and (n['label'] in ['*', '+', '-', '/', '^'] or n['type'] == "FUNCTION_CALL"):
             return f'__LX_EVAL_{n['counter']}'
         if type(n) is dict:
             if n['type'] == 'VARIABLE':
+                parseGraph.nodes[n['counter']]['type'] = 'SCOPED_VARIABLE'
                 return f'__LX_VAR_{n['value']}'
             else:
                 return n['value']
@@ -567,6 +568,8 @@ def visit_node(tree, node_id, from_id, symbols):
                 local_graph.add_edge(root["counter"], node['counter'])
                 children = tree.neighbors(nid)
                 for c in children:
+                    if c == root['counter']:
+                        continue
                     n = tree.nodes[c]
                     local_graph.add_node(n['counter'], **n)
                     local_graph.add_edge(node['counter'], n['counter'])
@@ -583,7 +586,8 @@ def visit_node(tree, node_id, from_id, symbols):
                 s = copy.deepcopy(symbol_table)
                 for i, a in enumerate(fn['args']):
                     s[a] = args[i]
-                res = execute_parse_tree(fn["graph"], s, True)
+                
+                res = execute_parse_tree(fn["graph"], s)
                 return res
 
             elif( callable(fn) ):
