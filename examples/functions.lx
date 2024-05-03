@@ -1,0 +1,21 @@
+println.("LEX function demos")
+
+"Functions can be defined the following way"
+add(a, b) {
+    "The last expression in the function body is returned"
+    a + b
+}
+
+"Functions can be called like so"
+result = add.(18, 3)
+println.("Result of add.(18, 3):")
+println.(result)
+
+"Functions in LEX are high order functions"
+addTwo(n, fn) {
+    two = fn.(1, 1)
+    fn.(n, two)
+}
+
+println.("Result of addTwo.(11, add):")
+println.(addTwo.(11, add))

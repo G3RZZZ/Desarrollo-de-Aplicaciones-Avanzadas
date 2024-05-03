@@ -16,6 +16,12 @@ def show_image(img):
     cv2.destroyAllWindows()
     return img
 
+def search_np(function_name):
+    try:
+        return getattr(np, function_name)
+    except:
+        return f"Error: module 'np' has no attribute {function_name}"
+
 def search_cv2(function_name):
     try:
         return getattr(cv2, function_name)

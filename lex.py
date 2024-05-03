@@ -14,13 +14,11 @@ import matplotlib.pyplot as plt
 from library import *
 
 #Initializing global variables
-# parseGraph = None #Graph to store the parse tree
-parseGraph = nx.Graph() #Graph to store the parse tree
-draw = True #Flag to draw the parse tree
+parseGraph = nx.Graph()
+draw = False #Flag to draw the parse tree
 symbols = False # Flag to dump the symbol table
 treeResult = False # Flag to print tree exec result
 NODE_COUNTER = 0 #Counter to assign a unique id to each node
-# debug = True #Flag to print debug messages
 
 symbol_table = dict()
 
@@ -62,7 +60,6 @@ TIMES_OP = 3
 DIVIDE_OP = 4
 
 tokens = (
-    # "FUNCTION",
     "NUMBER",
     "VARIABLE",
     "SETTO",
@@ -78,12 +75,8 @@ tokens = (
     "CONNECT",
     "LBRACE",
     "RBRACE",
-    # "SEMI",
     "DOT",
     "newline",
-    # "LBRACKET",
-    # "RBRACKET",
-    # "COLON",
 )
 
 precedence = (
@@ -101,14 +94,9 @@ t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_COMMA = r','
 t_CONNECT = r'\->'
-# t_FUNCTION = r'fun'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
-# t_SEMI = r';'
 t_DOT = r'\.'
-# t_LBRACKET = r'\['
-# t_RBRACKET = r'\]'
-# t_COLON = r':'
 
 def t_NUMBER(t):
     r'\d+\.?\d*'
@@ -179,8 +167,6 @@ def p_assignment_assign(p):
 
     p[0] = node
 
-# -------------- Flow --------------
-
 def p_assignment_flow(p):
     '''
     assignment : VARIABLE SETTO flow
@@ -247,8 +233,6 @@ def p_flow_function_call(p):
     parseGraph.add_edge(parseRoot["counter"], node["counter"])
 
     p[0] = node
-
-# -------------- Assignment and Expression --------------
 
 def p_assignment_expression(p):
     '''
@@ -353,8 +337,6 @@ def p_exponent_ext(p):
     p[0] = node
     # p[0] = pow(p[1], p[3]) 
 
-# -------------- Factor --------------
-
 def p_exponent_factor(p):
     '''
     exponent : factor
@@ -406,56 +388,6 @@ def p_function_call(p):
     # p[0] = node
     # p[0] = symbol_table[p[1]]()
 
-# -------------- List --------------
-
-# def p_list(p):
-#     '''
-#     list : list_expression COMMA list
-#          | list_expression
-#     '''
-#     if len(p) > 2:
-#         p[0] = [p[1]] + p[3]
-#     else:
-#         p[0] = [p[1]]
-
-# def p_subscript_access(p):
-#     '''
-#     list_expression : VARIABLE LBRACKET expression RBRACKET
-#     '''
-#     node = add_node( {"type":"SUBSCRIPT", "label":"[]", "value":""} )
-#     parseGraph.add_edge(node["counter"], p[1]["counter"])
-#     parseGraph.add_edge(node["counter"], p[3]["counter"])
-#     p[0] = node
-
-# def p_slice_access(p):
-#     '''
-#     list_expression : VARIABLE LBRACKET expression COLON expression RBRACKET
-#     '''
-#     node = add_node( {"type":"SLICE", "label":"[:]", "value":""} )
-#     parseGraph.add_edge(node["counter"], p[1]["counter"])
-#     parseGraph.add_edge(node["counter"], p[3]["counter"])
-#     parseGraph.add_edge(node["counter"], p[5]["counter"])
-#     p[0] = node
-
-# def p_assignment_list(p):
-#     '''
-#     assignment : VARIABLE LBRACKET list RBRACKET SETTO expression
-#     '''
-#     if len(p) > 5:
-#         node = add_node({"type":"SUBSCRIPT_ASSIGN", "label":"[]=", "value":""})
-#         parseGraph.add_edge(node["counter"], p[1]["counter"])
-#         parseGraph.add_edge(node["counter"], p[3]["counter"])
-#         parseGraph.add_edge(node["counter"], p[6]["counter"])
-#     else:
-#         node = add_node({"type":"ASSIGN", "label":"=", "value":""})
-#     p[0] = node
-
-# def p_empty_list(p):
-#     '''
-#     list : LBRACKET RBRACKET
-#     '''
-#     p[0] = add_node( {"type":"EMPTY_LIST", "label":"[]", "value":[]} )
-
 def p_params(p):
     '''
     params : params COMMA expression
@@ -464,11 +396,11 @@ def p_params(p):
     '''
     def process_node(n):
         if type(n) is dict and (n['label'] in ['*', '+', '-', '/', '^'] or n['type'] == "FUNCTION_CALL"):
-            return f"__LX_EVAL_{n['counter']}"
+            return f'__LX_EVAL_{n['counter']}'
         if type(n) is dict:
             if n['type'] == 'VARIABLE':
                 parseGraph.nodes[n['counter']]['type'] = 'SCOPED_VARIABLE'
-                return f"__LX_VAR_{n['value']}"
+                return f'__LX_VAR_{n['value']}'
             else:
                 return n['value']
         else:
@@ -613,18 +545,8 @@ def visit_node(tree, node_id, from_id, symbols):
     
     if (current_node["type"] == "FUNCTION_DEFINITION"):
         symbols[current_node["value"]["name"]] = current_node["value"]
-        return f"func<{current_node['value']['name']}>"
+        return f'func<{current_node['value']['name']}>'
 
-    # if( current_node["type"] == "SUBSCRIPT" ):
-    #     return symbol_table[res[0]][res[1]]
-    
-    # if( current_node["type"] == "SLICE" ):
-    #     return symbol_table[res[0]][res[1]:res[2]]
-    
-    # if( current_node["type"] == "SUBSCRIPT_ASSIGN" ):
-    #     symbol_table[res[0]][res[1]] = res[2]
-    #     return res[2]
-    
     if( current_node["type"] == "FUNCTION_CALL" or current_node["type"] == "FLOW_FUNCTION_CALL"):
         v = current_node["value"]
         # preprocess args
@@ -659,8 +581,8 @@ def visit_node(tree, node_id, from_id, symbols):
             fn = symbols[v['name']]
             if type(fn) is dict:
                 if len(args) != len(fn['args']):
-                    print(f"Error: function {v['name']} expected {len(fn['args'])} arguments, received {len(args)}")
-                    return f"Error: function {v['name']} expected {len(fn['args'])} arguments, received {len(args)}"
+                    print(f'Error: function {v['name']} expected {len(fn['args'])} arguments, received {len(args)}')
+                    return f'Error: function {v['name']} expected {len(fn['args'])} arguments, received {len(args)}'
                 
                 s = copy.deepcopy(symbol_table)
                 for i, a in enumerate(fn['args']):
@@ -679,6 +601,22 @@ def visit_node(tree, node_id, from_id, symbols):
             else:
                 print(f"Error function {v} IS NOT a function")
                 return "Error"
+        elif v['name'].startswith('np_'):
+            fn = search_np(v['name'].split('np_')[1])
+            if type(fn) is not str:
+                if callable(fn):
+                    try:
+                        res = fn(*args)
+                        return res
+                    except Exception as e:
+                        print(f"Error calling function {v}" , e, v, "FN: ", fn, "RES: ", res)
+                        return "Error"
+                else:
+                    print(f"Error function {v} IS NOT a function")
+                    return "Error"
+            else:
+                print(fn)
+                return fn
         else:
             fn = search_cv2(v['name'])
             if(fn is not None):
@@ -698,7 +636,7 @@ def visit_node(tree, node_id, from_id, symbols):
         
 
 # initialize globals
-parser = yacc.yacc(debug=True)
+parser = yacc.yacc()
 parseGraph = nx.Graph()
 NODE_COUNTER = 0
 
@@ -708,38 +646,34 @@ def repl():
     while True:
 
         try:
-            data = input(">")
-            if data == "exit":
+            data = input(">") + '\n'
+            if data.strip() == "exit":
                 break
-            if (data == "symbols"):
+            if (data.strip() == "symbols"):
                 print(symbol_table)
                 continue
 
         except EOFError:
             break
 
-        if not data: continue
+        try:
+            if not data: continue
+            parseGraph = nx.Graph()
+            NODE_COUNTER = 0
+            root = add_node( {"type":"ROOT", "label":"ROOT"} )
+            result = parser.parse(data)
+            parseGraph.add_edge(root["counter"], result["counter"])
 
-        parseGraph = nx.Graph()
-        NODE_COUNTER = 0
-        root = add_node( {"type":"ROOT", "label":"ROOT"} )
-        result = parser.parse(data)
-        parseGraph.add_edge(root["counter"], result["counter"])
+            labels = nx.get_node_attributes(parseGraph, "label")
 
-        labels = nx.get_node_attributes(parseGraph, "label")
+            if(draw):
+                nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
+                plt.show()
 
-        if(draw):
-            # pos = graphviz_layout(parseGraph, prog="dot")
-            # nx.draw(parseGraph, pos)
-            # nx.draw(parseGraph, with_labels=True, font_weight="bold")
-            # nx.draw(parseGraph, pos, labels=labels, with_labels=True)
-            nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
-            plt.show()
-
-        execute_parse_tree(parseGraph)
-        # print(result)
-
-    # print("Finished, accepted")
+            execute_parse_tree(parseGraph, symbol_table)
+        except:
+            print("Execution error")
+            continue
 
 def parse_file(path):
     global parseGraph
@@ -779,5 +713,4 @@ if __name__ == '__main__':
             treeResult = True
         parse_file(sys.argv[1])
     else:
-        print("Error: an input file must be provided. Run `python3 lex.py help` for more information")
-        #repl()
+        repl()

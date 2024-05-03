@@ -1,0 +1,11 @@
+println.("LEX order of operations demo")
+
+println.("Evaluating: 2 + 3 * 4 - 5 / 1")
+
+"LEX respects the order of operations"
+
+result = 2 + 3 * 4 - 5 / 1
+
+println.("Result:")
+
+println.(result)

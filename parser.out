@@ -42,22 +42,22 @@ Rule 36    expression -> VARIABLE LBRACKET expression COLON expression RBRACKET
 
 Terminals, with rules where they appear
 
-COLON                : 36
-COMMA                : 25 28
-CONNECT              : 4 5
-DIVIDE               : 15
-EXP                  : 17
-LBRACKET             : 27 32 33 35 36
-LPAREN               : 7 19 23 24
-MINUS                : 10
-NUMBER               : 20 34
-PLUS                 : 9
-RBRACKET             : 27 32 33 35 36
-RPAREN               : 7 19 23 24
-SETTO                : 1 2 3 35
-STRING               : 13
-TIMES                : 14
-VARIABLE             : 1 2 3 4 7 21 23 24 33 35 36
+COMMA                : 28 36
+CONNECT              : 8 9
+DIVIDE               : 19
+DOT                  : 11 27
+EXP                  : 21
+LBRACE               : 31
+LPAREN               : 11 23 27 31
+MINUS                : 14
+NUMBER               : 24
+PLUS                 : 13
+RBRACE               : 31
+RPAREN               : 11 23 27 31
+SETTO                : 6 7
+STRING               : 17
+TIMES                : 18
+VARIABLE             : 6 7 8 11 25 27 31 36 37
 error                : 
 
 Nonterminals, with rules where they appear
