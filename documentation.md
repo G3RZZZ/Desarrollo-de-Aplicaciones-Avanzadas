@@ -362,6 +362,6 @@ El interprete soporta ejecutar programas de multiples líneas, usando newlines p
 
 Enlaces a los videos individuales:
 
-- Gerardo Gutierrez Paniagua -
+- Gerardo Gutierrez Paniagua - [![Gerardo Gutierrez Paniagua]()](https://www.youtube.com/watch?v=1mLkspkZ5UevL_AIoTtATdBphluvQkwk6
 - Mateo Herrera Lavalle -
 - Jacobo Soffer Levy -
