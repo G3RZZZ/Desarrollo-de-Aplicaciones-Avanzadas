@@ -364,4 +364,4 @@ Enlaces a los videos individuales:
 
 - Gerardo Gutierrez Paniagua - [![Gerardo Gutierrez Paniagua]()](https://www.youtube.com/watch?v=1mLkspkZ5UevL_AIoTtATdBphluvQkwk6
 - Mateo Herrera Lavalle -
-- Jacobo Soffer Levy -
+- ![Jacobo Soffer Levy](https://drive.google.com/file/d/13PtwzwmoPc5dXgGZ2kQZh34oxQNFQgVJ/view?usp=drive_link)
