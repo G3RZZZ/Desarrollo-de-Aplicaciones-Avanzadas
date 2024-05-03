@@ -60,7 +60,6 @@ TIMES_OP = 3
 DIVIDE_OP = 4
 
 tokens = (
-    "FUNCTION",
     "NUMBER",
     "VARIABLE",
     "SETTO",
@@ -76,7 +75,6 @@ tokens = (
     "CONNECT",
     "LBRACE",
     "RBRACE",
-    "SEMI",
     "DOT",
     "newline",
 )
@@ -96,10 +94,8 @@ t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_COMMA = r','
 t_CONNECT = r'\->'
-t_FUNCTION = r'fun'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
-t_SEMI = r';'
 t_DOT = r'\.'
 
 def t_NUMBER(t):
@@ -605,6 +601,22 @@ def visit_node(tree, node_id, from_id, symbols):
             else:
                 print(f"Error function {v} IS NOT a function")
                 return "Error"
+        elif v['name'].startswith('np_'):
+            fn = search_np(v['name'].split('np_')[1])
+            if type(fn) is not str:
+                if callable(fn):
+                    try:
+                        res = fn(*args)
+                        return res
+                    except Exception as e:
+                        print(f"Error calling function {v}" , e, v, "FN: ", fn, "RES: ", res)
+                        return "Error"
+                else:
+                    print(f"Error function {v} IS NOT a function")
+                    return "Error"
+            else:
+                print(fn)
+                return fn
         else:
             fn = search_cv2(v['name'])
             if(fn is not None):
@@ -634,38 +646,34 @@ def repl():
     while True:
 
         try:
-            data = input(">")
-            if data == "exit":
+            data = input(">") + '\n'
+            if data.strip() == "exit":
                 break
-            if (data == "symbols"):
+            if (data.strip() == "symbols"):
                 print(symbol_table)
                 continue
 
         except EOFError:
             break
 
-        if not data: continue
+        try:
+            if not data: continue
+            parseGraph = nx.Graph()
+            NODE_COUNTER = 0
+            root = add_node( {"type":"ROOT", "label":"ROOT"} )
+            result = parser.parse(data)
+            parseGraph.add_edge(root["counter"], result["counter"])
 
-        parseGraph = nx.Graph()
-        NODE_COUNTER = 0
-        root = add_node( {"type":"ROOT", "label":"ROOT"} )
-        result = parser.parse(data)
-        parseGraph.add_edge(root["counter"], result["counter"])
+            labels = nx.get_node_attributes(parseGraph, "label")
 
-        labels = nx.get_node_attributes(parseGraph, "label")
+            if(draw):
+                nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
+                plt.show()
 
-        if(draw):
-            # pos = graphviz_layout(parseGraph, prog="dot")
-            # nx.draw(parseGraph, pos)
-            # nx.draw(parseGraph, with_labels=True, font_weight="bold")
-            # nx.draw(parseGraph, pos, labels=labels, with_labels=True)
-            nx.draw(parseGraph, labels=labels, with_labels=True, font_weight="bold")
-            plt.show()
-
-        execute_parse_tree(parseGraph)
-        # print(result)
-
-    # print("Finished, accepted")
+            execute_parse_tree(parseGraph, symbol_table)
+        except:
+            print("Execution error")
+            continue
 
 def parse_file(path):
     global parseGraph
@@ -694,7 +702,7 @@ if __name__ == '__main__':
             print('Usage: python3 lex.py <file_path>.lx <flags>')
             print('Flags:')
             print('  * To visualize the AST set the `draw` flag when running the command.')
-            print('  * To dump the symbol table set the `symblos` flag.')
+            print('  * To dump the symbol table set the `symbols` flag.')
             print('  * To print the result of AST execution set the `treeResult` flag.')
             exit(0)
         if 'draw' in sys.argv:
@@ -705,5 +713,4 @@ if __name__ == '__main__':
             treeResult = True
         parse_file(sys.argv[1])
     else:
-        print("Error: an input file must be provided. Run `python3 lex.py help` for more information")
-        #repl()
+        repl()

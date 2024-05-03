@@ -1,0 +1,11 @@
+println.("LEX opencv image manipulation flows and filters")
+
+x = load_image.("test.jpg")
+
+show_image.(x)
+
+vec = gen_vector.(10, 10)
+
+y = blur.(x, vec)
+
+show_image.(y)

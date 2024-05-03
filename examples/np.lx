@@ -1,0 +1,42 @@
+println.("LEX Numpy functions example")
+
+"To use numpy functions within LEX, prepend `np_` to the function name "
+
+a = load_image.("test.jpg")
+b = np_array.(a)
+
+mean = np_mean.(b)
+println.("mean:")
+println.(mean)
+
+std = np_std.(b)
+println.("std: ")
+println.(std)
+
+trace = np_trace.(b)
+println.("trace:")
+println.(trace)
+
+histogram = np_histogram.(b)
+println.("histogram:")
+println.(histogram)
+
+median = np_median.(b)
+println.("median:")
+println.(median)
+
+flip = np_flipud.(b)
+println.("flip:")
+show_image.(flip)
+
+mx = np_max.(b)
+println.("max:")
+println.(mx)
+
+mn = np_min.(b)
+println.("min:")
+println.(mn)
+
+floor = np_floor.(b)
+println.("Floor:")
+println.(floor)
