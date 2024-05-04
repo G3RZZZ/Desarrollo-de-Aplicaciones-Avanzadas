@@ -362,7 +362,7 @@ El interprete soporta ejecutar programas de multiples líneas, usando newlines p
 
 Enlaces a los videos individuales:
 
- - [![Gerardo Gutierrez Paniagua]()](https://www.youtube.com/watch?v=1mLkspkZ5UevL_AIoTtATdBphluvQkwk6)
+ - [![Gerardo Gutierrez Paniagua]()](https://drive.google.com/drive/folders/1POtHSdJYOzdB1zh0dN0wH96jj8gD6OhA?usp=sharing)
  
 - [![Mateo Herrera Lavalle]()](https://drive.google.com/drive/folders/1wc8DKQ72HASxPowE4HrFWepvaxRGtBPz?usp=sharing)
 
